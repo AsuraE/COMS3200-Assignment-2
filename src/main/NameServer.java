@@ -13,6 +13,12 @@ public class NameServer {
 		HashMap<String, InetSocketAddress> nsMap = new HashMap<String, 
 				InetSocketAddress>();
 		
+		// Error out if more than 1 command line is given
+		if (args.length > 1) {
+			System.err.println("Invalid command line arguments for NameServer");
+			System.exit(1);
+		}
+		
 		// Try parsing port number
 		int nsPort = 0;
 		
