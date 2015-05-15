@@ -166,11 +166,17 @@ public class Content {
 			// Convert request to a String
 			reply = new String(receivePacket.getData());
 			reply = reply.trim();
-			
+			Long key = 0l;
+			try {
+				key = Long.parseLong(reply);
+			} catch (Exception e) {
+				System.err.println("Invalid key");
+			}
+
 			// At this point we have the request in the form "item-id"
 			// Respond with either item-data or an abort if no item-data found
-			if (contentData.containsKey(reply)) {
-				sendData = (contentData.get(reply)).getBytes();
+			if (contentData.containsKey(key)) {
+				sendData = (contentData.get(key)).getBytes();
 				sendPacket = new DatagramPacket(sendData, sendData.length, 
 						replyIPAddress, replyPort);
 				

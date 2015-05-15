@@ -106,7 +106,7 @@ public class Client {
 		reply = reply.trim();
 		
 		// Check for errors
-		String[] replySplit = reply.split(":");
+		String[] replySplit = reply.split(" ");
 		
 		if (replySplit[0].equalsIgnoreCase("Error")) {
         	System.err.println("Client unable to connect with Store");
@@ -160,7 +160,7 @@ public class Client {
     		// If no ACK response comes after RETRIES number of times,
     		// assume server is offline and end
     		if (attempts >= RETRIES) {
-    			System.err.println("Client unable to connect with Store");
+    			System.err.println("3 Client unable to connect with Store");
     			System.exit(1);
     		}
         } else {
@@ -201,7 +201,7 @@ public class Client {
     		// If no ACK response comes after RETRIES number of times,
     		// assume server is offline and end
     		if (attempts >= RETRIES) {
-    			System.err.println("Client unable to connect with Store");
+    			System.err.println("4 Client unable to connect with Store");
     			System.exit(1);
     		}
         }
@@ -225,7 +225,6 @@ public class Client {
     		
     		// Parse as int
     		try {
-    			System.out.println("Reply: " + reply);
     			entries = Integer.parseInt(reply);
     		} catch (NumberFormatException e) {
     			System.err.println("Ya dun goof'd");
@@ -270,7 +269,7 @@ public class Client {
 	    	replySplit = reply.split(" ");
 	    	
 	    	if (replySplit[2].equalsIgnoreCase("aborted")) {
-	    		System.out.println(replySplit[0] + "transaction aborted");
+	    		System.out.println(replySplit[0] + " transaction aborted");
 	    	} else {
 	    		System.out.println(replySplit[0] + " ($ " + replySplit[1] + 
 	    				") CONTENT " + replySplit[2]);

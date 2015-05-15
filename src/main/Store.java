@@ -120,7 +120,6 @@ public class Store {
         	System.exit(1);
         } 
 
-        System.out.println("req bank");
 		// Request IP addr and port of Bank
 		sendData = "lookup Bank".getBytes();
 		sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 
@@ -189,7 +188,6 @@ public class Store {
 			}
 		}
 
-        System.out.println("req content");
 		// Request IP addr and port of Content
 		sendData = "lookup Content".getBytes();
 		sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 
@@ -256,8 +254,6 @@ public class Store {
 			}
 		}
 		
-
-        System.out.println("read content.txt");
 		// At this point, we want to read in the stock-file
         stockData = new TreeMap<Long, Float>();
         
@@ -296,7 +292,6 @@ public class Store {
 			sendPacket = new DatagramPacket(sendData, sendData.length, 
 			        replyIPAddress, replyPort);
 			serverSocket.send(sendPacket);
-			
 			// Convert request to a String
 			reply = new String(receivePacket.getData());
 			reply = reply.trim();
@@ -310,6 +305,47 @@ public class Store {
 	    		// Send back length to expect first
 	    		sendData = Integer.toString(stockData.entrySet().size())
 	    				.getBytes();
+	    		
+	    		sendPacket = new DatagramPacket(sendData, sendData.length, 
+						replyIPAddress, replyPort);
+    			
+    			// Simulate packet loss
+    			x = Math.random();
+    			if (x < PACKET_LOSS_SIM) {
+    				serverSocket.send(sendPacket);
+    			}
+
+    			// Set timeout to defined amount of time
+    			serverSocket.setSoTimeout(TIMEOUT);
+    			receiveData = new byte[1024];
+    			receivePacket = new DatagramPacket(receiveData, 
+    					receiveData.length);
+
+    			// Wait for ACK
+    			for (attempts = 0; attempts < RETRIES; attempts++) {
+    				try {
+    					serverSocket.receive(receivePacket);
+    					break;
+    				} catch (SocketTimeoutException se) {
+    					// ACK not received, resend packet and again,
+    					// simulate packet loss
+    					x = Math.random();
+    					if (x < PACKET_LOSS_SIM) {
+    						serverSocket.send(sendPacket);
+    					}
+    				}
+    			}
+
+    			// Set timeout back to infinite
+    			serverSocket.setSoTimeout(0);
+
+    			// If no ACK response comes after RETRIES number of times,
+    			// assume server is offline and end
+    			if (attempts >= RETRIES) {
+    				System.err.println("No response, server offline.");
+    				break;
+    			}
+	    		
 	    		for (Entry<Long, Float> entry : stockData.entrySet()) {
 	    			sendData = (entry.getKey() + " " + entry.getValue())
 	    					.getBytes();
@@ -416,14 +452,12 @@ public class Store {
 				// Convert request to a String
 				reply = new String(receivePacket.getData());
 				reply = reply.trim();
-				replySplit = reply.split(" ");
 				
 				// DO NOT MAKE THE SAME STUPID MISTAKE AS ASSIGNMENT 1
 				// BANK WILL SEND BACK A 1 OR 0, NOT "OK" OR "NOT OK" YOU MORON
-				
-		        if (replySplit[1].equalsIgnoreCase("1")) {
+		        if (reply.equalsIgnoreCase("1")) {
 		        	// Send "transaction aborted" string to client
-		        	sendData = (itemID + "transaction aborted").getBytes();
+		        	sendData = (itemID + " transaction aborted").getBytes();
 		        	sendPacket = new DatagramPacket(sendData, sendData.length, 
 							replyIPAddress, replyPort);
 		        	// Simulate packet loss
@@ -521,10 +555,10 @@ public class Store {
 					reply = new String(receivePacket.getData());
 					reply = reply.trim();
 					replySplit = reply.split(" ");
-			        
+					
 			        if (replySplit.length > 1) {
 			        	// Failed
-			        	sendData = (itemID + "transaction aborted").getBytes();
+			        	sendData = (itemID + " transaction aborted").getBytes();
 			        	sendPacket = new DatagramPacket(sendData, 
 			        			sendData.length, replyIPAddress, replyPort);
 			        	

@@ -70,8 +70,6 @@ public class NameServer {
 			sendPacket = new DatagramPacket(sendData, sendData.length, 
 					replyIPAddress, replyPort);
 			serverSocket.send(sendPacket);
-			System.out.println("ACK IS SENT TO PORT " + replyPort);
-			System.out.println("DATA: " + data);
 			
 			// We want to register a process to name server here
 	    	if(msg[0].equalsIgnoreCase("register")) {
@@ -175,8 +173,6 @@ public class NameServer {
 	    	} else if(msg[0].equalsIgnoreCase("lookup")) {
 	    		if (nsMap.containsKey(msg[1])) {
 	    			// Send addr in the form "hostname:port"
-	    			System.out.println("Lookup return: " + nsMap.get(msg[1]).getHostName() + " " + 
-	    					nsMap.get(msg[1]).getPort());
 	    			sendData = (nsMap.get(msg[1]).getHostName() + " " + 
 	    					nsMap.get(msg[1]).getPort()).getBytes();
 	    			// Send the lookup result back to the client 
