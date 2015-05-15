@@ -61,6 +61,7 @@ public class Client {
 
 		// Set timeout to defined amount of time
 		clientSocket.setSoTimeout(TIMEOUT);
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, 
 				receiveData.length);
 
@@ -90,6 +91,7 @@ public class Client {
 		}
 
 		// receive reply message from server
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		clientSocket.receive(receivePacket);
 		
@@ -132,6 +134,7 @@ public class Client {
 
     		// Set timeout to defined amount of time
     		clientSocket.setSoTimeout(TIMEOUT);
+    		receiveData = new byte[1024];
     		receivePacket = new DatagramPacket(receiveData, 
     				receiveData.length);
 
@@ -172,6 +175,7 @@ public class Client {
 
     		// Set timeout to defined amount of time
     		clientSocket.setSoTimeout(TIMEOUT);
+    		receiveData = new byte[1024];
     		receivePacket = new DatagramPacket(receiveData, 
     				receiveData.length);
 
@@ -203,7 +207,7 @@ public class Client {
 		
         // Wait for Store's reply
         if (request == 0) {
-        	
+        	receiveData = new byte[1024];
         	receivePacket = new DatagramPacket(receiveData, receiveData.length);
     		clientSocket.receive(receivePacket);
     		
@@ -227,6 +231,7 @@ public class Client {
     		
     		// Wait for replies containing each of the expected items
     		for (int i = 0; i < entries; i++) {
+    			receiveData = new byte[1024];
     			receivePacket = new DatagramPacket(receiveData, 
     					receiveData.length);
         		clientSocket.receive(receivePacket);
@@ -247,6 +252,7 @@ public class Client {
         } else {
         	
         	// Print out success in format item-id ($ item-price) CONTENT item-content
+        	receiveData = new byte[1024];
         	receivePacket = new DatagramPacket(receiveData, receiveData.length);
     		clientSocket.receive(receivePacket);
     		

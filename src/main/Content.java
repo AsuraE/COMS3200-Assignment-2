@@ -77,6 +77,7 @@ public class Content {
 
 		// Set timeout to defined amount of time
 		serverSocket.setSoTimeout(TIMEOUT);
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, 
 				receiveData.length);
 
@@ -108,6 +109,7 @@ public class Content {
 		// Request sent at this point, registered with nameserver
 		
 		// Wait for a reply from nameserver
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		serverSocket.receive(receivePacket);
 		
@@ -147,6 +149,7 @@ public class Content {
         // Now Content waits for a request for item data
 		while(true) {
 			// Receive request for item-data
+			receiveData = new byte[1024];
 			receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			serverSocket.receive(receivePacket);
 			
@@ -179,6 +182,7 @@ public class Content {
 
 				// Set timeout to defined amount of time
 				serverSocket.setSoTimeout(TIMEOUT);
+				receiveData = new byte[1024];
 				receivePacket = new DatagramPacket(receiveData, 
 						receiveData.length);
 
@@ -219,6 +223,7 @@ public class Content {
 
 				// Set timeout to defined amount of time
 				serverSocket.setSoTimeout(TIMEOUT);
+				receiveData = new byte[1024];
 				receivePacket = new DatagramPacket(receiveData, 
 						receiveData.length);
 

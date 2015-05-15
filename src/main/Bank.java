@@ -69,6 +69,7 @@ public class Bank {
 
 		// Set timeout to defined amount of time
 		serverSocket.setSoTimeout(TIMEOUT);
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, 
 				receiveData.length);
 
@@ -100,6 +101,7 @@ public class Bank {
 		// Request sent at this point, registered with nameserver
 		
 		// Wait for a reply from nameserver
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		serverSocket.receive(receivePacket);
 
@@ -122,6 +124,7 @@ public class Bank {
         // Now that we've registered with nameserver, start the bank's stuff
 		while(true) {
 			// Wait for bank to receive a new packet
+			receiveData = new byte[1024];
 			receivePacket = new DatagramPacket(receiveData,	receiveData.length);
 			serverSocket.receive(receivePacket);
 			
@@ -163,6 +166,7 @@ public class Bank {
 
 	    		// Set timeout to defined amount of time
 	    		serverSocket.setSoTimeout(TIMEOUT);
+	    		receiveData = new byte[1024];
 	    		receivePacket = new DatagramPacket(receiveData, 
 	    				receiveData.length);
 
@@ -206,6 +210,7 @@ public class Bank {
 
 	    		// Set timeout to defined amount of time
 	    		serverSocket.setSoTimeout(TIMEOUT);
+	    		receiveData = new byte[1024];
 	    		receivePacket = new DatagramPacket(receiveData, 
 	    				receiveData.length);
 

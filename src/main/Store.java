@@ -51,13 +51,15 @@ public class Store {
 			System.exit(1);
 		}
 		
+		System.out.println(storePort);
+		
 		// Construct datagram socket with our given port for store
 		DatagramSocket serverSocket = new DatagramSocket(storePort);
 
 		// Set server's IP address
 		InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
 		// Create data to be sent
-		sendData = ("register " + "Content " + "127.0.0.1" + " " + storePort)
+		sendData = ("register " + "Store " + "127.0.0.1" + " " + storePort)
 				.getBytes();
 		DatagramPacket sendPacket = new DatagramPacket(sendData, 
 				sendData.length, IPAddress, nsPort);
@@ -70,6 +72,7 @@ public class Store {
 
 		// Set timeout to defined amount of time
 		serverSocket.setSoTimeout(TIMEOUT);
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, 
 				receiveData.length);
 
@@ -77,6 +80,7 @@ public class Store {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				serverSocket.receive(receivePacket);
+				break;
 			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
@@ -99,6 +103,7 @@ public class Store {
 		// Request sent at this point, registered with nameserver
 		
 		// Wait for a reply from nameserver
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		serverSocket.receive(receivePacket);
 		
@@ -123,6 +128,7 @@ public class Store {
 				nsPort);
 		
 		// Wait for a reply from nameserver
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		serverSocket.receive(receivePacket);
 		
@@ -154,6 +160,7 @@ public class Store {
 				nsPort);
 		
 		// Wait for a reply from nameserver
+		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		serverSocket.receive(receivePacket);
 		
@@ -203,6 +210,7 @@ public class Store {
         // Wait for Client to send a request
         while(true) {
         	// Receive request for item-data
+        	receiveData = new byte[1024];
 			receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			serverSocket.receive(receivePacket);
 			
@@ -243,6 +251,7 @@ public class Store {
 
 	    			// Set timeout to defined amount of time
 	    			serverSocket.setSoTimeout(TIMEOUT);
+	    			receiveData = new byte[1024];
 	    			receivePacket = new DatagramPacket(receiveData, 
 	    					receiveData.length);
 
@@ -290,6 +299,7 @@ public class Store {
 
 	    		// Set timeout to defined amount of time
 	    		serverSocket.setSoTimeout(TIMEOUT);
+	    		receiveData = new byte[1024];
 	    		receivePacket = new DatagramPacket(receiveData, 
 	    				receiveData.length);
 
@@ -319,6 +329,7 @@ public class Store {
 	    		}
 				
 				// Wait for response from bank
+	    		receiveData = new byte[1024];
 				receivePacket = new DatagramPacket(receiveData, 
 						receiveData.length);
 				serverSocket.receive(receivePacket);
@@ -350,6 +361,7 @@ public class Store {
 
 		        	// Set timeout to defined amount of time
 		        	serverSocket.setSoTimeout(TIMEOUT);
+		        	receiveData = new byte[1024];
 		        	receivePacket = new DatagramPacket(receiveData, 
 		        			receiveData.length);
 
@@ -391,6 +403,7 @@ public class Store {
 
 		        	// Set timeout to defined amount of time
 		        	serverSocket.setSoTimeout(TIMEOUT);
+		        	receiveData = new byte[1024];
 		        	receivePacket = new DatagramPacket(receiveData, 
 		        			receiveData.length);
 
@@ -420,6 +433,7 @@ public class Store {
 		        	}
 					
 		        	// Wait for a reply from content
+		        	receiveData = new byte[1024];
 					receivePacket = new DatagramPacket(receiveData, 
 							receiveData.length);
 					serverSocket.receive(receivePacket);
@@ -449,6 +463,7 @@ public class Store {
 
 			        	// Set timeout to defined amount of time
 			        	serverSocket.setSoTimeout(TIMEOUT);
+			        	receiveData = new byte[1024];
 			        	receivePacket = new DatagramPacket(receiveData, 
 			        			receiveData.length);
 
@@ -491,6 +506,7 @@ public class Store {
 
 			        	// Set timeout to defined amount of time
 			        	serverSocket.setSoTimeout(TIMEOUT);
+			        	receiveData = new byte[1024];
 			        	receivePacket = new DatagramPacket(receiveData, 
 			        			receiveData.length);
 

@@ -51,6 +51,7 @@ public class NameServer {
 		// Waiting for incoming messages
 		while (true) {
 			// receive message
+			receiveData = new byte[1024];
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, 
 					receiveData.length);
 			serverSocket.receive(receivePacket);
@@ -59,11 +60,6 @@ public class NameServer {
 			String data = new String(receivePacket.getData());
 			data = data.trim();
 			String msg[] = data.split(" ");
-			
-			System.out.println("DATA: " + data);
-			for (int i = 0; i < msg.length; i++) {
-				System.out.println(msg[i]);
-			}
 			
 			// get the port of the client
 			InetAddress replyIPAddress = receivePacket.getAddress();
@@ -75,6 +71,7 @@ public class NameServer {
 					replyIPAddress, replyPort);
 			serverSocket.send(sendPacket);
 			System.out.println("ACK IS SENT TO PORT " + replyPort);
+			System.out.println("DATA: " + data);
 			
 			// We want to register a process to name server here
 	    	if(msg[0].equalsIgnoreCase("register")) {
@@ -100,6 +97,7 @@ public class NameServer {
 	    			
 	    			// Set timeout to defined amount of time
 	    			serverSocket.setSoTimeout(TIMEOUT);
+	    			receiveData = new byte[1024];
 	    			receivePacket = new DatagramPacket(receiveData, 
 	    					receiveData.length);
 	    			
@@ -144,6 +142,7 @@ public class NameServer {
     			
     			// Set timeout to defined amount of time
     			serverSocket.setSoTimeout(TIMEOUT);
+    			receiveData = new byte[1024];
     			receivePacket = new DatagramPacket(receiveData, 
     					receiveData.length);
     			
@@ -190,6 +189,7 @@ public class NameServer {
 	    			
 	    			// Set timeout to defined amount of time
 	    			serverSocket.setSoTimeout(TIMEOUT);
+	    			receiveData = new byte[1024];
 	    			receivePacket = new DatagramPacket(receiveData, 
 	    					receiveData.length);
 	    			
@@ -232,6 +232,7 @@ public class NameServer {
 	    			
 	    			// Set timeout to defined amount of time
 	    			serverSocket.setSoTimeout(TIMEOUT);
+	    			receiveData = new byte[1024];
 	    			receivePacket = new DatagramPacket(receiveData, 
 	    					receiveData.length);
 	    			
