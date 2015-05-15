@@ -5,7 +5,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Bank {
-	@SuppressWarnings("resource")
+	
 	public static void main(String args[]) throws Exception {
 				
 		int bankPort = 0;
