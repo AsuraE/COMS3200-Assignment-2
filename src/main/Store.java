@@ -51,8 +51,6 @@ public class Store {
 			System.exit(1);
 		}
 		
-		System.out.println(storePort);
-		
 		// Construct datagram socket with our given port for store
 		DatagramSocket serverSocket = new DatagramSocket(storePort);
 
@@ -121,11 +119,48 @@ public class Store {
         	System.err.println("Registration with NameServer failed");
         	System.exit(1);
         } 
-		
+
+        System.out.println("req bank");
 		// Request IP addr and port of Bank
 		sendData = "lookup Bank".getBytes();
 		sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 
 				nsPort);
+		
+		// Simulate packet loss
+		x = Math.random();
+		if (x < 0.5) {
+			serverSocket.send(sendPacket);
+		}
+
+		// Set timeout to defined amount of time
+		serverSocket.setSoTimeout(TIMEOUT);
+		receivePacket = new DatagramPacket(receiveData, 
+				receiveData.length);
+
+		// Wait for ACK
+		for (attempts = 0; attempts < RETRIES; attempts++) {
+			try {
+				serverSocket.receive(receivePacket);
+		        break;
+			} catch (SocketTimeoutException se) {
+				// ACK not received, resend packet and again,
+				// simulate packet loss
+				x = Math.random();
+				if (x < 0.5) {
+					serverSocket.send(sendPacket);
+				}
+			}
+		}
+
+		// Set timeout back to infinite
+		serverSocket.setSoTimeout(0);
+
+		// If no ACK response comes after RETRIES number of times,
+		// assume server is offline and end
+		if (attempts >= RETRIES) {
+			System.err.println("No response, server offline.");
+			System.exit(1);
+		}
 		
 		// Wait for a reply from nameserver
 		receiveData = new byte[1024];
@@ -150,15 +185,50 @@ public class Store {
 				int tempPort = Integer.parseInt(replySplit[1]);
 				bank = new InetSocketAddress(replySplit[0], tempPort);
 			} catch (Exception e) {
-				System.err.println("Bank has not registered");
+				System.err.println("2 Bank has not registered");
 			}
 		}
-		
+
+        System.out.println("req content");
 		// Request IP addr and port of Content
 		sendData = "lookup Content".getBytes();
 		sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 
 				nsPort);
-		
+		// Simulate packet loss
+		x = Math.random();
+		if (x < 0.5) {
+			serverSocket.send(sendPacket);
+		}
+
+		// Set timeout to defined amount of time
+		serverSocket.setSoTimeout(TIMEOUT);
+		receivePacket = new DatagramPacket(receiveData, 
+				receiveData.length);
+
+		// Wait for ACK
+		for (attempts = 0; attempts < RETRIES; attempts++) {
+			try {
+				serverSocket.receive(receivePacket);
+		        break;
+			} catch (SocketTimeoutException se) {
+				// ACK not received, resend packet and again,
+				// simulate packet loss
+				x = Math.random();
+				if (x < 0.5) {
+					serverSocket.send(sendPacket);
+				}
+			}
+		}
+
+		// Set timeout back to infinite
+		serverSocket.setSoTimeout(0);
+
+		// If no ACK response comes after RETRIES number of times,
+		// assume server is offline and end
+		if (attempts >= RETRIES) {
+			System.err.println("No response, server offline.");
+			System.exit(1);
+		}
 		// Wait for a reply from nameserver
 		receiveData = new byte[1024];
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -186,6 +256,8 @@ public class Store {
 			}
 		}
 		
+
+        System.out.println("read content.txt");
 		// At this point, we want to read in the stock-file
         stockData = new TreeMap<Long, Float>();
         
@@ -207,6 +279,7 @@ public class Store {
         }
 		
         
+        System.out.println("Store waiting for incoming connections");
         // Wait for Client to send a request
         while(true) {
         	// Receive request for item-data

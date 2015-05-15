@@ -117,6 +117,7 @@ public class Client {
         		store = new InetSocketAddress(replySplit[0], tempPort);
         	} catch (Exception e) {
         		System.err.println("Client unable to connect with Store");
+        		System.exit(1);
         	}
         }
 		
@@ -224,6 +225,7 @@ public class Client {
     		
     		// Parse as int
     		try {
+    			System.out.println("Reply: " + reply);
     			entries = Integer.parseInt(reply);
     		} catch (NumberFormatException e) {
     			System.err.println("Ya dun goof'd");

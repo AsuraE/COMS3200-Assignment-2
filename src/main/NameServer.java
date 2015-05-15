@@ -175,7 +175,9 @@ public class NameServer {
 	    	} else if(msg[0].equalsIgnoreCase("lookup")) {
 	    		if (nsMap.containsKey(msg[1])) {
 	    			// Send addr in the form "hostname:port"
-	    			sendData = (nsMap.get(msg[1]).getHostName() + ":" + 
+	    			System.out.println("Lookup return: " + nsMap.get(msg[1]).getHostName() + " " + 
+	    					nsMap.get(msg[1]).getPort());
+	    			sendData = (nsMap.get(msg[1]).getHostName() + " " + 
 	    					nsMap.get(msg[1]).getPort()).getBytes();
 	    			// Send the lookup result back to the client 
 	    			sendPacket = new DatagramPacket(sendData, 
