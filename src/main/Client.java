@@ -86,9 +86,28 @@ public class Client {
         	receivePacket = new DatagramPacket(receiveData, receiveData.length);
     		clientSocket.receive(receivePacket);
     		
-    		// Convert reply to a string and print it
+    		// Wait for store to send the expected number of items
     		reply = new String(receivePacket.getData());
-           	System.out.println(reply);
+    		int entries = 0;
+    		
+    		// Parse as int
+    		try {
+    			entries = Integer.parseInt(reply);
+    		} catch (NumberFormatException e) {
+    			System.err.println("Ya dun goof'd");
+    		}
+    		
+    		// Wait for replies containing each of the expected items
+    		for (int i = 0; i < entries; i++) {
+    			receivePacket = new DatagramPacket(receiveData, 
+    					receiveData.length);
+        		clientSocket.receive(receivePacket);
+        		
+        		// Convert to string and print
+        		reply = new String(receivePacket.getData());
+    			System.out.println(reply);
+    		}
+           	
            	
         } else {
         	
