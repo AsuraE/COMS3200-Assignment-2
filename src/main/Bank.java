@@ -7,20 +7,30 @@ import java.net.SocketTimeoutException;
 
 public class Bank {
 	
-	// Define timeout period (in ms) and retry limit
-	private static final int TIMEOUT = 5000;
-	private static final int RETRIES = 3;
+	// Define timeout period (in ms) 
+	private static final int TIMEOUT = 10000;
+	// Define amount of times to retry
+	private static final int RETRIES = 5;
 	// 0 = no packets arrive, 1 = all packets arrive
-	private static final int PACKET_LOSS_SIM = 1;
+	private static final double PACKET_LOSS_SIM = 0.75;
+	// Send and receive buffers
+	private static byte[] receiveData = new byte[1024];
+	private static byte[] sendData = new byte[1024];
+	// Datagram socket 
+	private static DatagramSocket serverSocket; 
+	// Datagram packet to receive
+	private static DatagramPacket receivePacket;
+	// Datagram packet to send
+	private static DatagramPacket sendPacket;
 	
 	public static void main(String args[]) throws Exception {
-				
+		
+		// Port number for Bank
 		int bankPort = 0;
+		// Port number for NameServer
 		int nsPort = 0;
-		DatagramPacket receivePacket;
+		// String to store reply from servers
 		String reply;
-		double x;
-		int attempts;
 		
 		// If there are more than 3 arguments
 		if (args.length != 2) {
@@ -45,13 +55,9 @@ public class Bank {
 		}
 		
 		// Construct datagram socket with our given port for bank
-		DatagramSocket serverSocket = new DatagramSocket(bankPort);
+		serverSocket = new DatagramSocket(bankPort);
 		
-		// Set buffers
-		byte[] receiveData = new byte[1024];
-		byte[] sendData = new byte[1024];
-		System.out.println("Bank waiting for incoming connections "
-        		+ "....");
+		System.out.println("Bank waiting for incoming connections...");
 		
 		// Register with name server
 		// Set server's IP address
@@ -59,42 +65,13 @@ public class Bank {
 		// Create data to be sent
 		sendData = ("register " + "Bank " + "127.0.0.1 "	+ bankPort)
 				.getBytes();
-		DatagramPacket sendPacket = new DatagramPacket(sendData, 
+		sendPacket = new DatagramPacket(sendData, 
 				sendData.length, IPAddress, nsPort);
-		// Simulate packet loss
-		x = Math.random();
-		if (x < PACKET_LOSS_SIM) {
-			serverSocket.send(sendPacket);
-		}
-
-		// Set timeout to defined amount of time
-		serverSocket.setSoTimeout(TIMEOUT);
-		receiveData = new byte[1024];
-		receivePacket = new DatagramPacket(receiveData, 
-				receiveData.length);
-
-		// Wait for ACK
-		for (attempts = 0; attempts < RETRIES; attempts++) {
-			try {
-				serverSocket.receive(receivePacket);
-				break;
-			} catch (SocketTimeoutException se) {
-				// ACK not received, resend packet and again,
-				// simulate packet loss
-				x = Math.random();
-				if (x < PACKET_LOSS_SIM) {
-					serverSocket.send(sendPacket);
-				}
-			}
-		}
-
-		// Set timeout back to infinite
-		serverSocket.setSoTimeout(0);
-
-		// If no ACK response comes after RETRIES number of times,
-		// assume server is offline and end
-		if (attempts >= RETRIES) {
-			System.err.println("Bank registration to NameServer failed due to no ACK");
+		
+		// Send message while simulating packet loss
+		// If our send is unsuccessful, end the process
+		if (!simulatePacketLoss()) {
+			serverSocket.close();
 			System.exit(1);
 		}
 		
@@ -106,10 +83,7 @@ public class Bank {
 		serverSocket.receive(receivePacket);
 
 		// Send ACK
-		sendData = "ACK".getBytes();
-		sendPacket = new DatagramPacket(sendData, sendData.length, 
-		        IPAddress, nsPort);
-		serverSocket.send(sendPacket);
+		ack(IPAddress, nsPort);
 		
 		// Convert reply to a String
 		reply = new String(receivePacket.getData());
@@ -118,6 +92,7 @@ public class Bank {
 		// Make sure no error occurred
         if (reply.equalsIgnoreCase("Error")) {
         	System.err.println("Bank registration to NameServer failed");
+        	serverSocket.close();
         	System.exit(1);
         } 
         
@@ -128,20 +103,18 @@ public class Bank {
 			receivePacket = new DatagramPacket(receiveData,	receiveData.length);
 			serverSocket.receive(receivePacket);
 			
+			// Grab IPAddress and Port to reply to
 			InetAddress replyIPAddress = receivePacket.getAddress();
 			int replyPort = receivePacket.getPort();
 			
 			// Send ACK
-			sendData = "ACK".getBytes();
-			sendPacket = new DatagramPacket(sendData, sendData.length, 
-			        replyIPAddress, replyPort);
-			serverSocket.send(sendPacket);
+			ack(replyIPAddress, replyPort);
 			
 			// Convert reply to a String
 			reply = new String(receivePacket.getData());
 			reply = reply.trim();
 			
-	    	// input will be of format "item-id item-price credit-card-number"
+	    	// Input will be of format "item-id item-price credit-card-number"
 	    	String split[] = reply.split(" ");
 	    	
 	    	// If item-id is odd, we sell. If even, we don't
@@ -149,7 +122,7 @@ public class Bank {
 	    	try {
 	    		temp = Long.parseLong(split[0]);
 	    	} catch (NumberFormatException e) {
-	    		e.printStackTrace();
+	    		System.err.println("Invalid item-id");
 	    	}
 	    	
 	    	if (temp % 2 == 1) {
@@ -157,41 +130,10 @@ public class Bank {
 	    		sendData = "0".getBytes();
 	    		sendPacket = new DatagramPacket(sendData, sendData.length, 
 	    				replyIPAddress, replyPort);
-	    		
-	    		// Simulate packet loss
-	    		x = Math.random();
-	    		if (x < PACKET_LOSS_SIM) {
-	    			serverSocket.send(sendPacket);
-	    		}
-
-	    		// Set timeout to defined amount of time
-	    		serverSocket.setSoTimeout(TIMEOUT);
-	    		receiveData = new byte[1024];
-	    		receivePacket = new DatagramPacket(receiveData, 
-	    				receiveData.length);
-
-	    		// Wait for ACK
-	    		for (attempts = 0; attempts < RETRIES; attempts++) {
-	    			try {
-	    				serverSocket.receive(receivePacket);
-	    				break;
-	    			} catch (SocketTimeoutException se) {
-	    				// ACK not received, resend packet and again,
-	    				// simulate packet loss
-	    				x = Math.random();
-	    				if (x < PACKET_LOSS_SIM) {
-	    					serverSocket.send(sendPacket);
-	    				}
-	    			}
-	    		}
-
-	    		// Set timeout back to infinite
-	    		serverSocket.setSoTimeout(0);
-
-	    		// If no ACK response comes after RETRIES number of times,
-	    		// assume server is offline and end
-	    		if (attempts >= RETRIES) {
-	    			System.err.println("No response, server offline.");
+	    			
+	    		// Send message while simulating packet loss
+	    		// If our send is unsuccessful, break out of loop
+	    		if (!simulatePacketLoss()) {
 	    			break;
 	    		}
 	    		
@@ -202,40 +144,9 @@ public class Bank {
 	    		sendPacket = new DatagramPacket(sendData, sendData.length, 
 	    				replyIPAddress, replyPort);
 	    		
-	    		// Simulate packet loss
-	    		x = Math.random();
-	    		if (x < PACKET_LOSS_SIM) {
-	    			serverSocket.send(sendPacket);
-	    		}
-
-	    		// Set timeout to defined amount of time
-	    		serverSocket.setSoTimeout(TIMEOUT);
-	    		receiveData = new byte[1024];
-	    		receivePacket = new DatagramPacket(receiveData, 
-	    				receiveData.length);
-
-	    		// Wait for ACK
-	    		for (attempts = 0; attempts < RETRIES; attempts++) {
-	    			try {
-	    				serverSocket.receive(receivePacket);
-	    				break;
-	    			} catch (SocketTimeoutException se) {
-	    				// ACK not received, resend packet and again,
-	    				// simulate packet loss
-	    				x = Math.random();
-	    				if (x < PACKET_LOSS_SIM) {
-	    					serverSocket.send(sendPacket);
-	    				}
-	    			}
-	    		}
-
-	    		// Set timeout back to infinite
-	    		serverSocket.setSoTimeout(0);
-
-	    		// If no ACK response comes after RETRIES number of times,
-	    		// assume server is offline and end
-	    		if (attempts >= RETRIES) {
-	    			System.err.println("No response, server offline.");
+	    		// Send message while simulating packet loss
+	    		// If our send is unsuccessful, break out of loop
+	    		if (!simulatePacketLoss()) {
 	    			break;
 	    		}
 	    		
@@ -243,5 +154,69 @@ public class Bank {
 		    }
 		}
 		serverSocket.close();
+	}	
+	
+	/**
+	 * Method to simulate packet loss and send a packet. Returns true or false
+	 * depending on whether server was reachable or not
+	 * 
+	 * @param:  none
+	 * @return: boolean
+	 * @throws: Excpetion
+	 */
+	private static boolean simulatePacketLoss() throws Exception {
+		// Simulate packet loss
+		double x = Math.random();
+		if (x < PACKET_LOSS_SIM) {
+			serverSocket.send(sendPacket);
+		}
+		
+		// Set timeout to defined amount of time
+		serverSocket.setSoTimeout(TIMEOUT);
+		receiveData = new byte[1024];
+		receivePacket = new DatagramPacket(receiveData, receiveData.length);
+		
+		// Wait for ACK
+		int attempts;
+		for (attempts = 0; attempts < RETRIES; attempts++) {
+			try {
+				serverSocket.receive(receivePacket);
+				break;
+			} catch (SocketTimeoutException se) {
+				// ACK not received, resend packet and again,
+				// simulate packet loss
+				x = Math.random();
+    			if (x < PACKET_LOSS_SIM) {
+    				serverSocket.send(sendPacket);
+    			}
+			}
+		}
+		
+		// Set timeout back to infinite
+		serverSocket.setSoTimeout(0);
+		
+		// If no ACK response comes after RETRIES number of times,
+		// assume server is offline and end
+		if (attempts >= RETRIES) {
+			System.err.println("No response, server offline.");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Method to send basic ACK response
+	 * 
+	 * @param replyIPAddress
+	 * @param replyPort
+	 * @throws Exception
+	 */
+	private static void ack(InetAddress replyIPAddress, int replyPort) 
+			throws Exception {
+		sendData = "ACK".getBytes();
+		sendPacket = new DatagramPacket(sendData, sendData.length, 
+				replyIPAddress, replyPort);
+		serverSocket.send(sendPacket);
 	}
 }
