@@ -4,15 +4,22 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 public class Client {
-
+	
+	// Define timeout period (in ms) and retry limit
+	private static final int TIMEOUT = 5000;
+	private static final int RETRIES = 10;
+	
 	public static void main(String args[]) throws Exception {
 		
 		Integer nsPort = 0;
 		Integer request = 0;
 		InetSocketAddress store = null;
 		String ccNo = "1234567890123456";
+		double x;
+		int attempts;
 		
 		// construct datagram socket
 		DatagramSocket clientSocket = new DatagramSocket();
@@ -43,11 +50,51 @@ public class Client {
 		sendData = "lookup Store".getBytes();
 		sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 
 				nsPort);
-		clientSocket.send(sendPacket);
-		
+
+		// Simulate packet loss
+		x = Math.random();
+		if (x < 0.5) {
+			clientSocket.send(sendPacket);
+		}
+
+		// Set timeout to defined amount of time
+		clientSocket.setSoTimeout(TIMEOUT);
+		receivePacket = new DatagramPacket(receiveData, 
+				receiveData.length);
+
+		// Wait for ACK
+		for (attempts = 0; attempts < RETRIES; attempts++) {
+			try {
+				clientSocket.receive(receivePacket);
+			} catch (SocketException se) {
+				// ACK not received, resend packet and again,
+				// simulate packet loss
+				x = Math.random();
+				if (x < 0.5) {
+					clientSocket.send(sendPacket);
+				}
+			}
+		}
+
+		// Set timeout back to infinite
+		clientSocket.setSoTimeout(0);
+
+		// If no ACK response comes after RETRIES number of times,
+		// assume server is offline and end
+		if (attempts >= RETRIES) {
+			System.err.println("Client unable to connect with NameServer");
+			System.exit(1);
+		}
+
 		// receive reply message from server
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		clientSocket.receive(receivePacket);
+		
+		// Send ACK
+		sendData = "ACK".getBytes();
+		sendPacket = new DatagramPacket(sendData, sendData.length, 
+		        IPAddress, nsPort);
+		clientSocket.send(sendPacket);
 		
 		// Convert reply to a string
 		reply = new String(receivePacket.getData());
@@ -72,12 +119,80 @@ public class Client {
         	sendData = request.toString().getBytes();
         	sendPacket = new DatagramPacket(sendData, sendData.length,
         			store.getAddress(), store.getPort());
-    		clientSocket.send(sendPacket);
+        	
+        	// Simulate packet loss
+    		x = Math.random();
+    		if (x < 0.5) {
+    			clientSocket.send(sendPacket);
+    		}
+
+    		// Set timeout to defined amount of time
+    		clientSocket.setSoTimeout(TIMEOUT);
+    		receivePacket = new DatagramPacket(receiveData, 
+    				receiveData.length);
+
+    		// Wait for ACK
+    		for (attempts = 0; attempts < RETRIES; attempts++) {
+    			try {
+    				clientSocket.receive(receivePacket);
+    			} catch (SocketException se) {
+    				// ACK not received, resend packet and again,
+    				// simulate packet loss
+    				x = Math.random();
+    				if (x < 0.5) {
+    					clientSocket.send(sendPacket);
+    				}
+    			}
+    		}
+
+    		// Set timeout back to infinite
+    		clientSocket.setSoTimeout(0);
+
+    		// If no ACK response comes after RETRIES number of times,
+    		// assume server is offline and end
+    		if (attempts >= RETRIES) {
+    			System.err.println("Client unable to connect with Store");
+    			System.exit(1);
+    		}
         } else {
         	sendData = (request + " " + ccNo).getBytes();
         	sendPacket = new DatagramPacket(sendData, sendData.length,
         			store.getAddress(), store.getPort());
-    		clientSocket.send(sendPacket);
+        	
+        	// Simulate packet loss
+    		x = Math.random();
+    		if (x < 0.5) {
+    			clientSocket.send(sendPacket);
+    		}
+
+    		// Set timeout to defined amount of time
+    		clientSocket.setSoTimeout(TIMEOUT);
+    		receivePacket = new DatagramPacket(receiveData, 
+    				receiveData.length);
+
+    		// Wait for ACK
+    		for (attempts = 0; attempts < RETRIES; attempts++) {
+    			try {
+    				clientSocket.receive(receivePacket);
+    			} catch (SocketException se) {
+    				// ACK not received, resend packet and again,
+    				// simulate packet loss
+    				x = Math.random();
+    				if (x < 0.5) {
+    					clientSocket.send(sendPacket);
+    				}
+    			}
+    		}
+
+    		// Set timeout back to infinite
+    		clientSocket.setSoTimeout(0);
+
+    		// If no ACK response comes after RETRIES number of times,
+    		// assume server is offline and end
+    		if (attempts >= RETRIES) {
+    			System.err.println("Client unable to connect with Store");
+    			System.exit(1);
+    		}
         }
 		
         // Wait for Store's reply
@@ -85,6 +200,12 @@ public class Client {
         	
         	receivePacket = new DatagramPacket(receiveData, receiveData.length);
     		clientSocket.receive(receivePacket);
+    		
+    		// Send ACK
+    		sendData = "ACK".getBytes();
+    		sendPacket = new DatagramPacket(sendData, sendData.length, 
+    				store.getAddress(), store.getPort());
+    		clientSocket.send(sendPacket);
     		
     		// Wait for store to send the expected number of items
     		reply = new String(receivePacket.getData());
@@ -103,6 +224,12 @@ public class Client {
     					receiveData.length);
         		clientSocket.receive(receivePacket);
         		
+        		// Send ACK
+        		sendData = "ACK".getBytes();
+        		sendPacket = new DatagramPacket(sendData, sendData.length, 
+        				store.getAddress(), store.getPort());
+        		clientSocket.send(sendPacket);
+        		
         		// Convert to string and print
         		reply = new String(receivePacket.getData());
     			System.out.println(reply);
@@ -114,6 +241,12 @@ public class Client {
         	// Print out success in format item-id ($ item-price) CONTENT item-content
         	receivePacket = new DatagramPacket(receiveData, receiveData.length);
     		clientSocket.receive(receivePacket);
+    		
+    		// Send ACK
+    		sendData = "ACK".getBytes();
+    		sendPacket = new DatagramPacket(sendData, sendData.length, 
+    				store.getAddress(), store.getPort());
+    		clientSocket.send(sendPacket);
     		
     		// Convert reply to a string 
     		reply = new String(receivePacket.getData());

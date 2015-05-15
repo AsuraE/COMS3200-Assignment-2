@@ -91,7 +91,7 @@ public class Bank {
 		// assume server is offline and end
 		if (attempts >= RETRIES) {
 			System.err.println("Bank registration to NameServer failed");
-			System.exit(0);
+			System.exit(1);
 		}
 		
 		// Request sent at this point, registered with nameserver
