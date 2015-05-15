@@ -7,7 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -15,7 +15,9 @@ public class Store {
 	
 	// Define timeout period (in ms) and retry limit
 	private static final int TIMEOUT = 5000;
-	private static final int RETRIES = 10;
+	private static final int RETRIES = 3;
+	// 0 = no packets arrive, 1 = all packets arrive
+	private static final int PACKET_LOSS_SIM = 1;
 	
 	public static void main(String args[]) throws Exception {
 		int storePort = 0;
@@ -62,7 +64,7 @@ public class Store {
 		
 		// Simulate packet loss
 		x = Math.random();
-		if (x < 0.5) {
+		if (x < PACKET_LOSS_SIM) {
 			serverSocket.send(sendPacket);
 		}
 
@@ -75,11 +77,11 @@ public class Store {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				serverSocket.receive(receivePacket);
-			} catch (SocketException se) {
+			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
 				x = Math.random();
-				if (x < 0.5) {
+				if (x < PACKET_LOSS_SIM) {
 					serverSocket.send(sendPacket);
 				}
 			}
@@ -108,6 +110,7 @@ public class Store {
 		
 		// Convert reply to a String
 		reply = new String(receivePacket.getData());
+		reply = reply.trim();
 		
 		if (reply.equalsIgnoreCase("Error")) {
         	System.err.println("Registration with NameServer failed");
@@ -131,6 +134,7 @@ public class Store {
 		
 		// Convert reply to a String
 		reply = new String(receivePacket.getData());
+		reply = reply.trim();
 		replySplit = reply.split(" ");
 		
 		if (replySplit[0].equalsIgnoreCase("Error")) {
@@ -161,6 +165,7 @@ public class Store {
 		
 		// Convert reply to a String
 		reply = new String(receivePacket.getData());
+		reply = reply.trim();
 		replySplit = reply.split(" ");
 		
 		if (replySplit[0].equalsIgnoreCase("Error")) {
@@ -213,6 +218,7 @@ public class Store {
 			
 			// Convert request to a String
 			reply = new String(receivePacket.getData());
+			reply = reply.trim();
 			replySplit = reply.split(" ");
         	
 			long itemID = 0l;
@@ -231,7 +237,7 @@ public class Store {
 	    			
 	    			// Simulate packet loss
 	    			x = Math.random();
-	    			if (x < 0.5) {
+	    			if (x < PACKET_LOSS_SIM) {
 	    				serverSocket.send(sendPacket);
 	    			}
 
@@ -244,11 +250,11 @@ public class Store {
 	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 	    				try {
 	    					serverSocket.receive(receivePacket);
-	    				} catch (SocketException se) {
+	    				} catch (SocketTimeoutException se) {
 	    					// ACK not received, resend packet and again,
 	    					// simulate packet loss
 	    					x = Math.random();
-	    					if (x < 0.5) {
+	    					if (x < PACKET_LOSS_SIM) {
 	    						serverSocket.send(sendPacket);
 	    					}
 	    				}
@@ -277,7 +283,7 @@ public class Store {
 	    		
 	    		// Simulate packet loss
 	    		x = Math.random();
-	    		if (x < 0.5) {
+	    		if (x < PACKET_LOSS_SIM) {
 	    			serverSocket.send(sendPacket);
 	    		}
 
@@ -290,11 +296,11 @@ public class Store {
 	    		for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
-	    			} catch (SocketException se) {
+	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss
 	    				x = Math.random();
-	    				if (x < 0.5) {
+	    				if (x < PACKET_LOSS_SIM) {
 	    					serverSocket.send(sendPacket);
 	    				}
 	    			}
@@ -323,6 +329,7 @@ public class Store {
 				
 				// Convert request to a String
 				reply = new String(receivePacket.getData());
+				reply = reply.trim();
 				replySplit = reply.split(" ");
 				
 				// DO NOT MAKE THE SAME STUPID MISTAKE AS ASSIGNMENT 1
@@ -335,7 +342,7 @@ public class Store {
 							replyIPAddress, replyPort);
 		        	// Simulate packet loss
 		        	x = Math.random();
-		        	if (x < 0.5) {
+		        	if (x < PACKET_LOSS_SIM) {
 		        		serverSocket.send(sendPacket);
 		        	}
 
@@ -348,11 +355,11 @@ public class Store {
 		        	for (attempts = 0; attempts < RETRIES; attempts++) {
 		        		try {
 		        			serverSocket.receive(receivePacket);
-		        		} catch (SocketException se) {
+		        		} catch (SocketTimeoutException se) {
 		        			// ACK not received, resend packet and again,
 		        			// simulate packet loss
 		        			x = Math.random();
-		        			if (x < 0.5) {
+		        			if (x < PACKET_LOSS_SIM) {
 		        				serverSocket.send(sendPacket);
 		        			}
 		        		}
@@ -375,7 +382,7 @@ public class Store {
 		        	
 		        	// Simulate packet loss
 		        	x = Math.random();
-		        	if (x < 0.5) {
+		        	if (x < PACKET_LOSS_SIM) {
 		        		serverSocket.send(sendPacket);
 		        	}
 
@@ -388,11 +395,11 @@ public class Store {
 		        	for (attempts = 0; attempts < RETRIES; attempts++) {
 		        		try {
 		        			serverSocket.receive(receivePacket);
-		        		} catch (SocketException se) {
+		        		} catch (SocketTimeoutException se) {
 		        			// ACK not received, resend packet and again,
 		        			// simulate packet loss
 		        			x = Math.random();
-		        			if (x < 0.5) {
+		        			if (x < PACKET_LOSS_SIM) {
 		        				serverSocket.send(sendPacket);
 		        			}
 		        		}
@@ -421,6 +428,7 @@ public class Store {
 					
 					// Convert request to a String
 					reply = new String(receivePacket.getData());
+					reply = reply.trim();
 					replySplit = reply.split(" ");
 			        
 			        if (replySplit.length > 1) {
@@ -431,7 +439,7 @@ public class Store {
 			        	
 			        	// Simulate packet loss
 			        	x = Math.random();
-			        	if (x < 0.5) {
+			        	if (x < PACKET_LOSS_SIM) {
 			        		serverSocket.send(sendPacket);
 			        	}
 
@@ -444,11 +452,11 @@ public class Store {
 			        	for (attempts = 0; attempts < RETRIES; attempts++) {
 			        		try {
 			        			serverSocket.receive(receivePacket);
-			        		} catch (SocketException se) {
+			        		} catch (SocketTimeoutException se) {
 			        			// ACK not received, resend packet and again,
 			        			// simulate packet loss
 			        			x = Math.random();
-			        			if (x < 0.5) {
+			        			if (x < PACKET_LOSS_SIM) {
 			        				serverSocket.send(sendPacket);
 			        			}
 			        		}
@@ -472,7 +480,7 @@ public class Store {
 			        	
 			        	// Simulate packet loss
 			        	x = Math.random();
-			        	if (x < 0.5) {
+			        	if (x < PACKET_LOSS_SIM) {
 			        		serverSocket.send(sendPacket);
 			        	}
 
@@ -485,11 +493,11 @@ public class Store {
 			        	for (attempts = 0; attempts < RETRIES; attempts++) {
 			        		try {
 			        			serverSocket.receive(receivePacket);
-			        		} catch (SocketException se) {
+			        		} catch (SocketTimeoutException se) {
 			        			// ACK not received, resend packet and again,
 			        			// simulate packet loss
 			        			x = Math.random();
-			        			if (x < 0.5) {
+			        			if (x < PACKET_LOSS_SIM) {
 			        				serverSocket.send(sendPacket);
 			        			}
 			        		}

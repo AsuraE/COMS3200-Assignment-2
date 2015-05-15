@@ -3,13 +3,15 @@ package main;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class Bank {
 	
 	// Define timeout period (in ms) and retry limit
 	private static final int TIMEOUT = 5000;
-	private static final int RETRIES = 10;
+	private static final int RETRIES = 3;
+	// 0 = no packets arrive, 1 = all packets arrive
+	private static final int PACKET_LOSS_SIM = 1;
 	
 	public static void main(String args[]) throws Exception {
 				
@@ -61,7 +63,7 @@ public class Bank {
 				sendData.length, IPAddress, nsPort);
 		// Simulate packet loss
 		x = Math.random();
-		if (x < 0.5) {
+		if (x < PACKET_LOSS_SIM) {
 			serverSocket.send(sendPacket);
 		}
 
@@ -74,11 +76,11 @@ public class Bank {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				serverSocket.receive(receivePacket);
-			} catch (SocketException se) {
+			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
 				x = Math.random();
-				if (x < 0.5) {
+				if (x < PACKET_LOSS_SIM) {
 					serverSocket.send(sendPacket);
 				}
 			}
@@ -108,6 +110,7 @@ public class Bank {
 		
 		// Convert reply to a String
 		reply = new String(receivePacket.getData());
+		reply = reply.trim();
 
 		// Make sure no error occurred
         if (reply.equalsIgnoreCase("Error")) {
@@ -132,6 +135,7 @@ public class Bank {
 			
 			// Convert reply to a String
 			reply = new String(receivePacket.getData());
+			reply = reply.trim();
 			
 	    	// input will be of format "item-id item-price credit-card-number"
 	    	String split[] = reply.split(" ");
@@ -152,7 +156,7 @@ public class Bank {
 	    		
 	    		// Simulate packet loss
 	    		x = Math.random();
-	    		if (x < 0.5) {
+	    		if (x < PACKET_LOSS_SIM) {
 	    			serverSocket.send(sendPacket);
 	    		}
 
@@ -165,11 +169,11 @@ public class Bank {
 	    		for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
-	    			} catch (SocketException se) {
+	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss
 	    				x = Math.random();
-	    				if (x < 0.5) {
+	    				if (x < PACKET_LOSS_SIM) {
 	    					serverSocket.send(sendPacket);
 	    				}
 	    			}
@@ -194,7 +198,7 @@ public class Bank {
 	    		
 	    		// Simulate packet loss
 	    		x = Math.random();
-	    		if (x < 0.5) {
+	    		if (x < PACKET_LOSS_SIM) {
 	    			serverSocket.send(sendPacket);
 	    		}
 
@@ -207,11 +211,11 @@ public class Bank {
 	    		for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
-	    			} catch (SocketException se) {
+	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss
 	    				x = Math.random();
-	    				if (x < 0.5) {
+	    				if (x < PACKET_LOSS_SIM) {
 	    					serverSocket.send(sendPacket);
 	    				}
 	    			}

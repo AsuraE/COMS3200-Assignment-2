@@ -4,15 +4,18 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 
 public class NameServer {
 	
 	// Define timeout period (in ms) and retry limit
 	private static final int TIMEOUT = 5000;
-	private static final int RETRIES = 10;
+	private static final int RETRIES = 3;
+	// 0 = no packets arrive, 1 = all packets arrive
+	private static final int PACKET_LOSS_SIM = 1;
 			
+	@SuppressWarnings("resource")
 	public static void main(String args[]) throws Exception {
 		
 		HashMap<String, InetSocketAddress> nsMap = new HashMap<String, 
@@ -54,7 +57,13 @@ public class NameServer {
 			
 			// We have a message at this point, decide what to do with it
 			String data = new String(receivePacket.getData());
+			data = data.trim();
 			String msg[] = data.split(" ");
+			
+			System.out.println("DATA: " + data);
+			for (int i = 0; i < msg.length; i++) {
+				System.out.println(msg[i]);
+			}
 			
 			// get the port of the client
 			InetAddress IPAddress = receivePacket.getAddress();
@@ -68,7 +77,7 @@ public class NameServer {
 			
 			// We want to register a process to name server here
 	    	if(msg[0].equalsIgnoreCase("register")) {
-	    		
+
 	    		try {
 		    		// Create an inet socket address
 		    		InetSocketAddress addr = new InetSocketAddress(msg[2], 
@@ -76,6 +85,7 @@ public class NameServer {
 		    		// Map this to the server name
 		    		nsMap.put(msg[1], addr);
 	    		} catch (Exception e) {
+	    			System.out.println(e);
 	    			// Send error notice back to client 
 	    			sendData = "Error".getBytes();
 	    			sendPacket = new DatagramPacket(sendData, sendData.length, 
@@ -83,7 +93,7 @@ public class NameServer {
 	    			
 	    			// Simulate packet loss
 	    			x = Math.random();
-	    			if (x < 0.5) {
+	    			if (x < PACKET_LOSS_SIM) {
 	    				serverSocket.send(sendPacket);
 	    			}
 	    			
@@ -93,14 +103,15 @@ public class NameServer {
 	    					receiveData.length);
 	    			
 	    			// Wait for ACK
-	    			for (int i = 0; i < RETRIES; i++) {
+	    			int attempts;
+	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 		    			try {
 		    				serverSocket.receive(receivePacket);
-		    			} catch (SocketException se) {
+		    			} catch (SocketTimeoutException se) {
 		    				// ACK not received, resend packet and again,
 		    				// simulate packet loss
 		    				x = Math.random();
-			    			if (x < 0.5) {
+			    			if (x < PACKET_LOSS_SIM) {
 			    				serverSocket.send(sendPacket);
 			    			}
 		    			}
@@ -108,7 +119,15 @@ public class NameServer {
 	    			
 	    			// Set timeout back to infinite
 	    			serverSocket.setSoTimeout(0);
-	    		    break;
+	    			
+	    			// If no ACK response comes after RETRIES number of times,
+	    			// assume server is offline and end
+	    			if (attempts >= RETRIES) {
+	    				System.err.println("0 No response, server offline.");
+	    			}
+	    			
+	    			// Set timeout back to infinite
+	    			serverSocket.setSoTimeout(0);
 	    		}
 	    		// Send success notice back to client
 	    		sendData = "Success".getBytes();
@@ -117,7 +136,7 @@ public class NameServer {
     			
     			// Simulate packet loss
     			x = Math.random();
-    			if (x < 0.5) {
+    			if (x < PACKET_LOSS_SIM) {
     				serverSocket.send(sendPacket);
     			}
     			
@@ -131,11 +150,11 @@ public class NameServer {
     			for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
-	    			} catch (SocketException se) {
+	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss
 	    				x = Math.random();
-		    			if (x < 0.5) {
+		    			if (x < PACKET_LOSS_SIM) {
 		    				serverSocket.send(sendPacket);
 		    			}
 	    			}
@@ -147,8 +166,7 @@ public class NameServer {
     			// If no ACK response comes after RETRIES number of times,
     			// assume server is offline and end
     			if (attempts >= RETRIES) {
-    				System.err.println("No response, server offline.");
-    				break;
+    				System.err.println("1 No response, server offline.");
     			}
 		    	
 	    		// We want to lookup here
@@ -163,7 +181,7 @@ public class NameServer {
 	    			
 	    			// Simulate packet loss
 	    			x = Math.random();
-	    			if (x < 0.5) {
+	    			if (x < PACKET_LOSS_SIM) {
 	    				serverSocket.send(sendPacket);
 	    			}
 	    			
@@ -177,11 +195,11 @@ public class NameServer {
 	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 		    			try {
 		    				serverSocket.receive(receivePacket);
-		    			} catch (SocketException se) {
+		    			} catch (SocketTimeoutException se) {
 		    				// ACK not received, resend packet and again,
 		    				// simulate packet loss
 		    				x = Math.random();
-			    			if (x < 0.5) {
+			    			if (x < PACKET_LOSS_SIM) {
 			    				serverSocket.send(sendPacket);
 			    			}
 		    			}
@@ -193,8 +211,7 @@ public class NameServer {
 	    			// If no ACK response comes after RETRIES number of times,
 	    			// assume server is offline and end
 	    			if (attempts >= RETRIES) {
-	    				System.err.println("No response, server offline.");
-	    				break;
+	    				System.err.println("2 No response, server offline.");
 	    			}
 	    		} else {
 	    			// Send error notice back to client 
@@ -205,7 +222,7 @@ public class NameServer {
 
 	    			// Simulate packet loss
 	    			x = Math.random();
-	    			if (x < 0.5) {
+	    			if (x < PACKET_LOSS_SIM) {
 	    				serverSocket.send(sendPacket);
 	    			}
 	    			
@@ -219,11 +236,11 @@ public class NameServer {
 	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 		    			try {
 		    				serverSocket.receive(receivePacket);
-		    			} catch (SocketException se) {
+		    			} catch (SocketTimeoutException se) {
 		    				// ACK not received, resend packet and again,
 		    				// simulate packet loss
 		    				x = Math.random();
-			    			if (x < 0.5) {
+			    			if (x < PACKET_LOSS_SIM) {
 			    				serverSocket.send(sendPacket);
 			    			}
 		    			}
@@ -235,13 +252,11 @@ public class NameServer {
 	    			// If no ACK response comes after RETRIES number of times,
 	    			// assume server is offline and end
 	    			if (attempts >= RETRIES) {
-	    				System.err.println("No response, server offline.");
-	    				break;
+	    				System.err.println("3 No response, server offline.");
 	    			}
 	    		}
 	    	}
 	    	
 		}
-		serverSocket.close();
 	}
 }

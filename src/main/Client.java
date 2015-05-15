@@ -4,13 +4,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class Client {
 	
 	// Define timeout period (in ms) and retry limit
 	private static final int TIMEOUT = 5000;
-	private static final int RETRIES = 10;
+	private static final int RETRIES = 3;
+	// 0 = no packets arrive, 1 = all packets arrive
+	private static final int PACKET_LOSS_SIM = 1;
 	
 	public static void main(String args[]) throws Exception {
 		
@@ -53,7 +55,7 @@ public class Client {
 
 		// Simulate packet loss
 		x = Math.random();
-		if (x < 0.5) {
+		if (x < PACKET_LOSS_SIM) {
 			clientSocket.send(sendPacket);
 		}
 
@@ -66,11 +68,11 @@ public class Client {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				clientSocket.receive(receivePacket);
-			} catch (SocketException se) {
+			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
 				x = Math.random();
-				if (x < 0.5) {
+				if (x < PACKET_LOSS_SIM) {
 					clientSocket.send(sendPacket);
 				}
 			}
@@ -98,6 +100,7 @@ public class Client {
 		
 		// Convert reply to a string
 		reply = new String(receivePacket.getData());
+		reply = reply.trim();
 		
 		// Check for errors
 		String[] replySplit = reply.split(":");
@@ -122,7 +125,7 @@ public class Client {
         	
         	// Simulate packet loss
     		x = Math.random();
-    		if (x < 0.5) {
+    		if (x < PACKET_LOSS_SIM) {
     			clientSocket.send(sendPacket);
     		}
 
@@ -135,11 +138,11 @@ public class Client {
     		for (attempts = 0; attempts < RETRIES; attempts++) {
     			try {
     				clientSocket.receive(receivePacket);
-    			} catch (SocketException se) {
+    			} catch (SocketTimeoutException se) {
     				// ACK not received, resend packet and again,
     				// simulate packet loss
     				x = Math.random();
-    				if (x < 0.5) {
+    				if (x < PACKET_LOSS_SIM) {
     					clientSocket.send(sendPacket);
     				}
     			}
@@ -161,7 +164,7 @@ public class Client {
         	
         	// Simulate packet loss
     		x = Math.random();
-    		if (x < 0.5) {
+    		if (x < PACKET_LOSS_SIM) {
     			clientSocket.send(sendPacket);
     		}
 
@@ -174,11 +177,11 @@ public class Client {
     		for (attempts = 0; attempts < RETRIES; attempts++) {
     			try {
     				clientSocket.receive(receivePacket);
-    			} catch (SocketException se) {
+    			} catch (SocketTimeoutException se) {
     				// ACK not received, resend packet and again,
     				// simulate packet loss
     				x = Math.random();
-    				if (x < 0.5) {
+    				if (x < PACKET_LOSS_SIM) {
     					clientSocket.send(sendPacket);
     				}
     			}
@@ -209,6 +212,7 @@ public class Client {
     		
     		// Wait for store to send the expected number of items
     		reply = new String(receivePacket.getData());
+    		reply = reply.trim();
     		int entries = 0;
     		
     		// Parse as int
@@ -232,6 +236,7 @@ public class Client {
         		
         		// Convert to string and print
         		reply = new String(receivePacket.getData());
+        		reply = reply.trim();
     			System.out.println(reply);
     		}
            	
@@ -250,6 +255,7 @@ public class Client {
     		
     		// Convert reply to a string 
     		reply = new String(receivePacket.getData());
+    		reply = reply.trim();
 	    	replySplit = reply.split(" ");
 	    	
 	    	if (replySplit[2].equalsIgnoreCase("aborted")) {
