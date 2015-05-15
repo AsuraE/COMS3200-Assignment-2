@@ -5,11 +5,15 @@ import java.io.FileReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
+import java.net.SocketException;
 import java.util.HashMap;
 
 public class Content {
-
+	
+	// Define timeout period (in ms) and retry limit
+	private static final int TIMEOUT = 5000;
+	private static final int RETRIES = 10;
+	
 	public static void main(String args[]) throws Exception {
 		
 		int contentPort = 0;
@@ -18,6 +22,8 @@ public class Content {
 		HashMap<Long, String> contentData;
 		DatagramPacket receivePacket;
 		String reply;
+		double x;
+		int attempts;
 		
 		// If there are more than 3 arguments
 		if (args.length != 3) {
@@ -53,8 +59,6 @@ public class Content {
 		System.out.println("Content waiting for incoming connections "
         		+ "....");
 		
-		// Register with name server
-		DatagramSocket clientSocket = new DatagramSocket();
 		// Set server's IP address
 		InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
 		// Create data to be sent
@@ -62,12 +66,53 @@ public class Content {
 				.getBytes();
 		DatagramPacket sendPacket = new DatagramPacket(sendData, 
 				sendData.length, IPAddress, nsPort);
-		clientSocket.send(sendPacket);
+		
+		// Simulate packet loss
+		x = Math.random();
+		if (x < 0.5) {
+			serverSocket.send(sendPacket);
+		}
+
+		// Set timeout to defined amount of time
+		serverSocket.setSoTimeout(TIMEOUT);
+		receivePacket = new DatagramPacket(receiveData, 
+				receiveData.length);
+
+		// Wait for ACK
+		for (attempts = 0; attempts < RETRIES; attempts++) {
+			try {
+				serverSocket.receive(receivePacket);
+			} catch (SocketException se) {
+				// ACK not received, resend packet and again,
+				// simulate packet loss
+				x = Math.random();
+				if (x < 0.5) {
+					serverSocket.send(sendPacket);
+				}
+			}
+		}
+
+		// Set timeout back to infinite
+		serverSocket.setSoTimeout(0);
+
+		// If no ACK response comes after RETRIES number of times,
+		// assume server is offline and end
+		if (attempts >= RETRIES) {
+			System.err.println("Content unable to connect with NameServer");
+			System.exit(1);
+		}
+		
 		// Request sent at this point, registered with nameserver
 		
 		// Wait for a reply from nameserver
 		receivePacket = new DatagramPacket(receiveData, receiveData.length);
-		clientSocket.receive(receivePacket);
+		serverSocket.receive(receivePacket);
+		
+		// Send ACK
+		sendData = "ACK".getBytes();
+		sendPacket = new DatagramPacket(sendData, sendData.length, 
+		        IPAddress, nsPort);
+		serverSocket.send(sendPacket);
 		
 		// Convert reply to a String
 		reply = new String(receivePacket.getData());
@@ -105,6 +150,12 @@ public class Content {
 			InetAddress replyIPAddress = receivePacket.getAddress();
 			int replyPort = receivePacket.getPort();
 			
+			// Send ACK
+			sendData = "ACK".getBytes();
+			sendPacket = new DatagramPacket(sendData, sendData.length, 
+			        replyIPAddress, replyPort);
+			serverSocket.send(sendPacket);
+			
 			// Convert request to a String
 			reply = new String(receivePacket.getData());
 			
@@ -114,15 +165,82 @@ public class Content {
 				sendData = (contentData.get(reply)).getBytes();
 				sendPacket = new DatagramPacket(sendData, sendData.length, 
 						replyIPAddress, replyPort);
-				serverSocket.send(sendPacket);
+				
+				// Simulate packet loss
+				x = Math.random();
+				if (x < 0.5) {
+					serverSocket.send(sendPacket);
+				}
+
+				// Set timeout to defined amount of time
+				serverSocket.setSoTimeout(TIMEOUT);
+				receivePacket = new DatagramPacket(receiveData, 
+						receiveData.length);
+
+				// Wait for ACK
+				for (attempts = 0; attempts < RETRIES; attempts++) {
+					try {
+						serverSocket.receive(receivePacket);
+					} catch (SocketException se) {
+						// ACK not received, resend packet and again,
+						// simulate packet loss
+						x = Math.random();
+						if (x < 0.5) {
+							serverSocket.send(sendPacket);
+						}
+					}
+				}
+
+				// Set timeout back to infinite
+				serverSocket.setSoTimeout(0);
+
+				// If no ACK response comes after RETRIES number of times,
+				// assume server is offline and end
+				if (attempts >= RETRIES) {
+					System.err.println("No response, server offline.");
+					break;
+				}
 			} else {
 				sendData = (reply + " transaction aborted").getBytes();
 				sendPacket = new DatagramPacket(sendData, sendData.length, 
 						replyIPAddress, replyPort);
-				serverSocket.send(sendPacket);
-			}
-			
-		}
-	}
+				
+				// Simulate packet loss
+				x = Math.random();
+				if (x < 0.5) {
+					serverSocket.send(sendPacket);
+				}
 
+				// Set timeout to defined amount of time
+				serverSocket.setSoTimeout(TIMEOUT);
+				receivePacket = new DatagramPacket(receiveData, 
+						receiveData.length);
+
+				// Wait for ACK
+				for (attempts = 0; attempts < RETRIES; attempts++) {
+					try {
+						serverSocket.receive(receivePacket);
+					} catch (SocketException se) {
+						// ACK not received, resend packet and again,
+						// simulate packet loss
+						x = Math.random();
+						if (x < 0.5) {
+							serverSocket.send(sendPacket);
+						}
+					}
+				}
+
+				// Set timeout back to infinite
+				serverSocket.setSoTimeout(0);
+
+				// If no ACK response comes after RETRIES number of times,
+				// assume server is offline and end
+				if (attempts >= RETRIES) {
+					System.err.println("No response, server offline.");
+					break;
+				}
+			}
+		}
+		serverSocket.close();
+	}
 }
