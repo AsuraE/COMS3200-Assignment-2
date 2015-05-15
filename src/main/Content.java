@@ -84,6 +84,7 @@ public class Content {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				serverSocket.receive(receivePacket);
+				break;
 			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
@@ -185,6 +186,7 @@ public class Content {
 				for (attempts = 0; attempts < RETRIES; attempts++) {
 					try {
 						serverSocket.receive(receivePacket);
+						break;
 					} catch (SocketTimeoutException se) {
 						// ACK not received, resend packet and again,
 						// simulate packet loss
@@ -224,6 +226,7 @@ public class Content {
 				for (attempts = 0; attempts < RETRIES; attempts++) {
 					try {
 						serverSocket.receive(receivePacket);
+						break;
 					} catch (SocketTimeoutException se) {
 						// ACK not received, resend packet and again,
 						// simulate packet loss

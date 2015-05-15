@@ -57,8 +57,8 @@ public class Bank {
 		// Set server's IP address
 		InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
 		// Create data to be sent
-		sendData = ("register " + "Bank " + "127.0.0.1" + " " 
-				+ bankPort).getBytes();
+		sendData = ("register " + "Bank " + "127.0.0.1 "	+ bankPort)
+				.getBytes();
 		DatagramPacket sendPacket = new DatagramPacket(sendData, 
 				sendData.length, IPAddress, nsPort);
 		// Simulate packet loss
@@ -76,6 +76,7 @@ public class Bank {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				serverSocket.receive(receivePacket);
+				break;
 			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
@@ -92,7 +93,7 @@ public class Bank {
 		// If no ACK response comes after RETRIES number of times,
 		// assume server is offline and end
 		if (attempts >= RETRIES) {
-			System.err.println("Bank registration to NameServer failed");
+			System.err.println("Bank registration to NameServer failed due to no ACK");
 			System.exit(1);
 		}
 		
@@ -169,6 +170,7 @@ public class Bank {
 	    		for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
+	    				break;
 	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss
@@ -211,6 +213,7 @@ public class Bank {
 	    		for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
+	    				break;
 	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss

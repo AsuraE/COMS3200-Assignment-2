@@ -66,14 +66,15 @@ public class NameServer {
 			}
 			
 			// get the port of the client
-			InetAddress IPAddress = receivePacket.getAddress();
-			int cPort = receivePacket.getPort();
+			InetAddress replyIPAddress = receivePacket.getAddress();
+			int replyPort = receivePacket.getPort();
 			
 			// Send ACK
 			sendData = "ACK".getBytes();
 			sendPacket = new DatagramPacket(sendData, sendData.length, 
-					IPAddress, cPort);
+					replyIPAddress, replyPort);
 			serverSocket.send(sendPacket);
+			System.out.println("ACK IS SENT TO PORT " + replyPort);
 			
 			// We want to register a process to name server here
 	    	if(msg[0].equalsIgnoreCase("register")) {
@@ -89,7 +90,7 @@ public class NameServer {
 	    			// Send error notice back to client 
 	    			sendData = "Error".getBytes();
 	    			sendPacket = new DatagramPacket(sendData, sendData.length, 
-	    					IPAddress, cPort);
+	    					replyIPAddress, replyPort);
 	    			
 	    			// Simulate packet loss
 	    			x = Math.random();
@@ -107,6 +108,7 @@ public class NameServer {
 	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 		    			try {
 		    				serverSocket.receive(receivePacket);
+		    				break;
 		    			} catch (SocketTimeoutException se) {
 		    				// ACK not received, resend packet and again,
 		    				// simulate packet loss
@@ -132,7 +134,7 @@ public class NameServer {
 	    		// Send success notice back to client
 	    		sendData = "Success".getBytes();
     			sendPacket = new DatagramPacket(sendData, sendData.length, 
-    					IPAddress, cPort);
+    					replyIPAddress, replyPort);
     			
     			// Simulate packet loss
     			x = Math.random();
@@ -150,6 +152,7 @@ public class NameServer {
     			for (attempts = 0; attempts < RETRIES; attempts++) {
 	    			try {
 	    				serverSocket.receive(receivePacket);
+	    				break;
 	    			} catch (SocketTimeoutException se) {
 	    				// ACK not received, resend packet and again,
 	    				// simulate packet loss
@@ -177,7 +180,7 @@ public class NameServer {
 	    					nsMap.get(msg[1]).getPort()).getBytes();
 	    			// Send the lookup result back to the client 
 	    			sendPacket = new DatagramPacket(sendData, 
-	    					sendData.length, IPAddress, cPort);
+	    					sendData.length, replyIPAddress, replyPort);
 	    			
 	    			// Simulate packet loss
 	    			x = Math.random();
@@ -195,6 +198,7 @@ public class NameServer {
 	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 		    			try {
 		    				serverSocket.receive(receivePacket);
+		    				break;
 		    			} catch (SocketTimeoutException se) {
 		    				// ACK not received, resend packet and again,
 		    				// simulate packet loss
@@ -218,7 +222,7 @@ public class NameServer {
 	    			sendData = ("Error: Process has not registered with the "
 	    					+ "Name Server").getBytes();
 	    			sendPacket = new DatagramPacket(sendData, 
-	    					sendData.length, IPAddress, cPort);
+	    					sendData.length, replyIPAddress, replyPort);
 
 	    			// Simulate packet loss
 	    			x = Math.random();
@@ -236,6 +240,7 @@ public class NameServer {
 	    			for (attempts = 0; attempts < RETRIES; attempts++) {
 		    			try {
 		    				serverSocket.receive(receivePacket);
+		    				break;
 		    			} catch (SocketTimeoutException se) {
 		    				// ACK not received, resend packet and again,
 		    				// simulate packet loss

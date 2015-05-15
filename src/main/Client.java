@@ -68,6 +68,7 @@ public class Client {
 		for (attempts = 0; attempts < RETRIES; attempts++) {
 			try {
 				clientSocket.receive(receivePacket);
+				break;
 			} catch (SocketTimeoutException se) {
 				// ACK not received, resend packet and again,
 				// simulate packet loss
@@ -138,6 +139,7 @@ public class Client {
     		for (attempts = 0; attempts < RETRIES; attempts++) {
     			try {
     				clientSocket.receive(receivePacket);
+    				break;
     			} catch (SocketTimeoutException se) {
     				// ACK not received, resend packet and again,
     				// simulate packet loss
@@ -177,6 +179,7 @@ public class Client {
     		for (attempts = 0; attempts < RETRIES; attempts++) {
     			try {
     				clientSocket.receive(receivePacket);
+    				break;
     			} catch (SocketTimeoutException se) {
     				// ACK not received, resend packet and again,
     				// simulate packet loss
