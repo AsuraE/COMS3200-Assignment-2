@@ -11,9 +11,9 @@ public class Client {
 	// Define timeout period (in ms) 
 	private static final int TIMEOUT = 10000;
 	// Define amount of times to retry
-	private static final int RETRIES = 5;
+	private static final int RETRIES = 10;
 	// 0 = no packets arrive, 1 = all packets arrive
-	private static final double PACKET_LOSS_SIM = 0.75;
+	private static final double PACKET_LOSS_SIM = 0.5;
 	// Send and receive buffers
 	private static byte[] receiveData = new byte[1024];
 	private static byte[] sendData = new byte[1024];
