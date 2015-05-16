@@ -11,20 +11,20 @@ import java.util.HashMap;
 public class Content {
 	
 	// Define timeout period (in ms) 
-		private static final int TIMEOUT = 10000;
-		// Define amount of times to retry
-		private static final int RETRIES = 5;
-		// 0 = no packets arrive, 1 = all packets arrive
-		private static final double PACKET_LOSS_SIM = 0.75;
-		// Send and receive buffers
-		private static byte[] receiveData = new byte[1024];
-		private static byte[] sendData = new byte[1024];
-		// Datagram socket 
-		private static DatagramSocket serverSocket; 
-		// Datagram packet to receive
-		private static DatagramPacket receivePacket;
-		// Datagram packet to send
-		private static DatagramPacket sendPacket;
+	private static final int TIMEOUT = 10000;
+	// Define amount of times to retry
+	private static final int RETRIES = 5;
+	// 0 = no packets arrive, 1 = all packets arrive
+	private static final double PACKET_LOSS_SIM = 0.75;
+	// Send and receive buffers
+	private static byte[] receiveData = new byte[1024];
+	private static byte[] sendData = new byte[1024];
+	// Datagram socket 
+	private static DatagramSocket serverSocket; 
+	// Datagram packet to receive
+	private static DatagramPacket receivePacket;
+	// Datagram packet to send
+	private static DatagramPacket sendPacket;
 	
 	public static void main(String args[]) throws Exception {
 		
