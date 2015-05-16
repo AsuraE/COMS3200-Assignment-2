@@ -184,7 +184,7 @@ public class Store {
 				int tempPort = Integer.parseInt(replySplit[1]);
 				bank = new InetSocketAddress(replySplit[0], tempPort);
 			} catch (Exception e) {
-				System.err.println("2 Bank has not registered");
+				System.err.println("Bank has not registered");
 			}
 		}
 
